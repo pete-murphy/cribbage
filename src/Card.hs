@@ -75,3 +75,12 @@ isStraight' cards = go (map rank (List.sort cards))
 distanceBetweenRanks :: Rank -> Rank -> Int
 distanceBetweenRanks r1 r2 =
   abs (fromEnum r1 - fromEnum r2)
+
+shuffle :: RandomGen g => g -> [a] -> [a]
+shuffle gen = go gen []
+  where
+    go gen' acc [] = acc
+    go gen' acc cards =
+      let (n, gen'') = Random.next gen'
+          (cards', pick : cards'') = List.splitAt (n `mod` length cards) cards
+       in go gen' (pick : acc) (cards' ++ cards'')
