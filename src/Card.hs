@@ -83,4 +83,4 @@ shuffle gen = go gen []
     go gen' acc cards =
       let (n, gen'') = Random.next gen'
           (cards', pick : cards'') = List.splitAt (n `mod` length cards) cards
-       in go gen' (pick : acc) (cards' ++ cards'')
+       in go gen'' (pick : acc) (cards' ++ cards'')
