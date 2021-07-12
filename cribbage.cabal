@@ -6,11 +6,6 @@ cabal-version: 1.12
 
 name:           cribbage
 version:        0.1.0.0
-category:       Web
-homepage:       https://github.com/githubuser/cribbage#readme
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2021 Author name here
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -24,6 +19,13 @@ executable cribbage
       Paths_cribbage
   hs-source-dirs:
       src
+  default-extensions:
+      BlockArguments
+      LambdaCase
+      ScopedTypeVariables
+      TypeApplications
   build-depends:
       base >=4.7 && <5
+    , random
+    , transformers
   default-language: Haskell2010

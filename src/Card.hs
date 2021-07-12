@@ -1,9 +1,13 @@
-{-# LANGUAGE BlockArguments #-}
-
 module Card where
 
-import Data.Bits
-import Data.List
+import qualified Control.Monad.ST as ST
+import qualified Control.Monad.Trans.State as State
+import qualified Control.Monad.Trans.State (State (..))
+import Data.Bits ((.&.))
+import qualified Data.Bits as Bits
+import qualified Data.List as List
+import System.Random (RandomGen)
+import qualified System.Random as Random
 
 data Rank
   = Ace
@@ -39,7 +43,7 @@ isFlush cards = or do
 isFlush' :: [Card] -> Bool
 isFlush' =
   (/= (0 :: Int))
-    . foldr ((.&.) . (bit . fromEnum . suit)) (complement 0)
+    . foldr ((.&.) . (Bits.bit . fromEnum . suit)) (Bits.complement 0)
 
 showSuitBits :: Suit -> String
 showSuitBits Hearts = "0001"
@@ -47,28 +51,26 @@ showSuitBits Diamonds = "0010"
 showSuitBits Clubs = "0100"
 showSuitBits Spades = "1000"
 
--- "1111" .&. -- complement 0
--- "0010" .&.
--- "0100" .&.
--- "0100" .&.
--- "0100" .&.
--- "0100" .&.
--- "0100"
+-- 1111 .&. -- complement 0
+-- 0010 .&.
+-- 0100 .&.
+-- 0100 .&.
+-- 0100 .&.
+-- 0100 .&.
+-- 0100
 
 isStraight :: [Card] -> Bool
 isStraight cards =
-  let ranks = map rank (sort cards)
+  let ranks = map rank (List.sort cards)
       distances = zipWith distanceBetweenRanks ranks (tail ranks)
    in all (== 1) distances
 
-{-
+isStraight' :: [Card] -> Bool
+isStraight' cards = go (map rank (List.sort cards))
+  where
     go [] = True
-    go (c : []) = True
+    go [c] = True
     go (c : cs) = distanceBetweenRanks c (head cs) == 1 && go cs
-      | c /= maxBound =
-        succ c == head cs && go cs
-      | otherwise = False
- -}
 
 distanceBetweenRanks :: Rank -> Rank -> Int
 distanceBetweenRanks r1 r2 =
