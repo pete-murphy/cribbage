@@ -5,8 +5,11 @@ extra-source-files:
 
 dependencies:
   - base >= 4.7 && < 5
-  - transformers
+  - array
+  - containers
+  - mtl
   - random
+  - vector
 
 executables:
   cribbage:

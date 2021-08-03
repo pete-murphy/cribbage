@@ -25,7 +25,10 @@ executable cribbage
       ScopedTypeVariables
       TypeApplications
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
+    , containers
+    , mtl
     , random
-    , transformers
+    , vector
   default-language: Haskell2010
