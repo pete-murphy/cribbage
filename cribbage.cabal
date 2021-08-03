@@ -16,6 +16,7 @@ executable cribbage
   main-is: Main.hs
   other-modules:
       Card
+      Shuffle.Common
       Paths_cribbage
   hs-source-dirs:
       src
