@@ -2,44 +2,35 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Shuffle.Common where
+module Shuffle.List where
 
 import Control.Monad.IO.Class (MonadIO)
 import qualified Control.Monad.IO.Class as IO.Class
-import Control.Monad.State (State, StateT)
 import qualified Control.Monad.State as State
-import Control.Monad.Trans (MonadTrans)
 import qualified Data.List as List
-import System.Random (Random, RandomGen, StdGen)
-import qualified System.Random as Random
-
-newtype RandomState a = RandomState {runRandomState :: State StdGen a}
-  deriving newtype (Functor, Applicative, Monad)
-
-newtype RandomStateT m a = RandomStateT {runRandomStateT :: StateT StdGen m a}
-  deriving newtype (Functor, Applicative, Monad, MonadTrans)
-
--- random :: RandomGen g => g -> (a, g)
-rand :: Random a => RandomState a
-rand = RandomState do
-  (x, g) <- State.gets Random.random
-  State.put g
-  pure x
-
-rand' :: (Monad m, Random a) => RandomStateT m a
-rand' = RandomStateT do
-  (x, g) <- State.gets Random.random
-  State.put g
-  pure x
+import Shuffle.Random as Random
+import System.Random (RandomGen, StdGen)
+import qualified System.Random
 
 shuffle :: RandomGen g => g -> [a] -> [a]
 shuffle gen = go gen []
   where
-    go gen' acc [] = acc
-    go gen' acc cards =
-      let (n, gen'') = Random.next gen'
-          (cards', pick : cards'') = List.splitAt (n `mod` length cards) cards
-       in go gen'' (pick : acc) (cards' ++ cards'')
+    go _ acc [] = acc
+    go gen' acc xs =
+      let (n, gen'') = System.Random.next gen'
+          (xs', pick : xs'') = List.splitAt (n `mod` length xs) xs
+       in go gen'' (pick : acc) (xs' <> xs'')
+
+shuffle_ :: RandomGen g => g -> [a] -> [a]
+shuffle_ gen = go gen []
+  where
+    go _ acc [] = acc
+    go gen' acc xs =
+      let (n, gen'') = System.Random.next gen'
+          (xs', pick : xs'') = List.splitAt (n `mod` length xs) xs
+       in go gen'' (pick : acc) (xs' ++ xs'')
+
+--
 
 shuffle' :: StdGen -> [a] -> [a]
 shuffle' g = flip State.evalState g . runRandomState . go []
@@ -63,9 +54,8 @@ shuffle'' g = flip State.evalStateT g . runRandomStateT . go []
 
 shuffle''' :: MonadIO m => [a] -> m [a]
 shuffle''' cards = do
-  g <- IO.Class.liftIO Random.newStdGen
+  g <- IO.Class.liftIO System.Random.newStdGen
   shuffle'' g cards
-
 -- TODO: Shuffle w
 -- - DList
 -- - STArray

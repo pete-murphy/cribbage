@@ -68,7 +68,7 @@ isStraight' :: [Card] -> Bool
 isStraight' cards = go (map rank (List.sort cards))
   where
     go [] = True
-    go [c] = True
+    go [_] = True
     go (c : cs) = distanceBetweenRanks c (head cs) == 1 && go cs
 
 distanceBetweenRanks :: Rank -> Rank -> Int

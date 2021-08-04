@@ -15,8 +15,13 @@ extra-source-files:
 executable cribbage
   main-is: Main.hs
   other-modules:
+      Benchmark
       Card
-      Shuffle.Common
+      Shuffle.List
+      Shuffle.MyDList
+      Shuffle.Random
+      Shuffle.Sequence
+      Shuffle.Vector
       Paths_cribbage
   hs-source-dirs:
       src
@@ -29,6 +34,7 @@ executable cribbage
       array
     , base >=4.7 && <5
     , containers
+    , criterion
     , mtl
     , random
     , vector
