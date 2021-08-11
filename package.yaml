@@ -9,16 +9,35 @@ dependencies:
   - containers
   - criterion
   - mtl
+  - QuickCheck
   - random
   - vector
 
+library:
+  source-dirs:
+    - src
+    - test
+
 executables:
-  cribbage:
-    source-dirs: src
+  cribbage-exe:
     main: Main.hs
+    source-dirs: app
+    dependencies:
+      - cribbage
+
+tests:
+  cribbage-test:
+    main: Main.hs
+    source-dirs: test
+    dependencies:
+      - cribbage
 
 default-extensions:
   - BlockArguments
   - LambdaCase
+  - NumericUnderscores
   - ScopedTypeVariables
   - TypeApplications
+
+ghc-options:
+  - -O2

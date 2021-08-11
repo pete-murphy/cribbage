@@ -11,6 +11,9 @@ newtype DList a = DL {unDL :: [a] -> [a]}
 empty :: DList a
 empty = DL \_ -> []
 
+-- concat :: DList a -> DList a -> DList a
+-- concat (DL xs) (DL ys) = DL ()
+
 -- *******************************
 
 shuffle :: RandomGen g => g -> DList a -> DList a

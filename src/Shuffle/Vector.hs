@@ -25,7 +25,7 @@ shuffle g (Vector.fromList -> v) = Vector.toList newVector
   where
     newVector =
       Vector.create do
-        let len = (Vector.length v)
+        let len = Vector.length v
         ref <- STRef.newSTRef g
         v' <- Vector.thaw v
         Foldable.for_ [0 .. len - 1] \i -> do
@@ -44,14 +44,6 @@ something g = do
     STRef.writeSTRef ref g''
     pure n
 
-something' :: RandomGen g => g -> ST s Int
-something' g = do
-  -- ref <- STRef.newSTRef g
-  -- g' <- STRef.readSTRef ref
-  let (n, g'') = Random.random g
-  -- STRef.writeSTRef ref g''
-  pure n
-
 shuffle' :: forall g a. RandomGen g => g -> [a] -> [a]
 shuffle' g xs = Vector.toList newVector
   where
@@ -64,18 +56,3 @@ shuffle' g xs = Vector.toList newVector
         j <- (`mod` len) <$> x
         Vector.Mutable.swap v i j
       pure v
-
--- |
--- flip State.evalStateT g . runRandomStateT . go []
--- where
---   go :: Vector a -> Vector a -> RandomStateT m (Vector a)
---   go acc [] = pure acc
---   go acc cards = do
---     n <- rand'
---     let (cards', pick : cards'') = List.splitAt (n `mod` length cards) cards
---     go (pick : acc) (cards' ++ cards'')
-
--- shuffle' :: MonadIO m => Vector a -> m (Vector a)
--- shuffle' cards = do
---   g <- IO.Class.liftIO System.Random.newStdGen
---   shuffle g cards

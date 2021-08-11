@@ -28,21 +28,8 @@ shuffle gen (Sequence.fromList -> s) = go gen [] s (length s)
 shuffle' :: RandomGen g => g -> [a] -> [a]
 shuffle' gen (Sequence.fromList -> s) = toList s'
   where
-    ijs = System.Random.randoms gen `zip` [0 .. length s - 1]
-    s' = foldr ($) s (uncurry swap <$> ijs)
-
--- go :: RandomGen g => g -> Seq a -> Seq a -> Seq a
--- go _ acc _ 0 = acc
--- go g acc s l =
---   let (n, g') = System.Random.next g
---       (leftS, (Sequence.viewl -> (pick :< rightS))) = Sequence.splitAt (n `mod` l) s
---    in go g' (pick : acc) (leftS >< rightS) (l - 1)
-
--- go _ acc [] = acc
--- go gen' acc xs =
---   let
---       (xs', pick : xs'') = List.splitAt (n `mod` length xs) xs
---    in go gen'' (pick : acc) (xs' <> xs'')
+    ijs = map (`mod` length s) (System.Random.randoms gen) `zip` [0 .. length s - 1]
+    s' = foldl' (flip ($)) s (uncurry swap <$> ijs)
 
 swap :: Int -> Int -> Seq a -> Seq a
 swap i j s =

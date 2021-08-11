@@ -13,24 +13,13 @@ import System.Random (RandomGen, StdGen)
 import qualified System.Random
 
 shuffle :: RandomGen g => g -> [a] -> [a]
-shuffle gen = go gen []
+shuffle gen xs = go gen [] xs (length xs)
   where
-    go _ acc [] = acc
-    go gen' acc xs =
+    go _ acc _ 0 = acc
+    go gen' acc xs l =
       let (n, gen'') = System.Random.next gen'
-          (xs', pick : xs'') = List.splitAt (n `mod` length xs) xs
-       in go gen'' (pick : acc) (xs' <> xs'')
-
-shuffle_ :: RandomGen g => g -> [a] -> [a]
-shuffle_ gen = go gen []
-  where
-    go _ acc [] = acc
-    go gen' acc xs =
-      let (n, gen'') = System.Random.next gen'
-          (xs', pick : xs'') = List.splitAt (n `mod` length xs) xs
-       in go gen'' (pick : acc) (xs' ++ xs'')
-
---
+          (xs', pick : xs'') = List.splitAt (n `mod` l) xs
+       in go gen'' (pick : acc) (xs' ++ xs'') (l - 1)
 
 shuffle' :: StdGen -> [a] -> [a]
 shuffle' g = flip State.evalState g . runRandomState . go []

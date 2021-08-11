@@ -12,28 +12,83 @@ build-type:     Simple
 extra-source-files:
     README.md
 
-executable cribbage
-  main-is: Main.hs
-  other-modules:
-      Benchmark
+library
+  exposed-modules:
       Card
       Shuffle.List
       Shuffle.MyDList
       Shuffle.Random
       Shuffle.Sequence
       Shuffle.Vector
+      Main
+  other-modules:
       Paths_cribbage
   hs-source-dirs:
       src
+      test
   default-extensions:
       BlockArguments
       LambdaCase
+      NumericUnderscores
       ScopedTypeVariables
       TypeApplications
+  ghc-options: -O2
   build-depends:
-      array
+      QuickCheck
+    , array
     , base >=4.7 && <5
     , containers
+    , criterion
+    , mtl
+    , random
+    , vector
+  default-language: Haskell2010
+
+executable cribbage-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_cribbage
+  hs-source-dirs:
+      app
+  default-extensions:
+      BlockArguments
+      LambdaCase
+      NumericUnderscores
+      ScopedTypeVariables
+      TypeApplications
+  ghc-options: -O2
+  build-depends:
+      QuickCheck
+    , array
+    , base >=4.7 && <5
+    , containers
+    , cribbage
+    , criterion
+    , mtl
+    , random
+    , vector
+  default-language: Haskell2010
+
+test-suite cribbage-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Paths_cribbage
+  hs-source-dirs:
+      test
+  default-extensions:
+      BlockArguments
+      LambdaCase
+      NumericUnderscores
+      ScopedTypeVariables
+      TypeApplications
+  ghc-options: -O2
+  build-depends:
+      QuickCheck
+    , array
+    , base >=4.7 && <5
+    , containers
+    , cribbage
     , criterion
     , mtl
     , random
