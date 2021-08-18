@@ -1,17 +1,35 @@
+{-# LANGUAGE RankNTypes #-}
+
 module Main where
 
+import Data.Foldable
+import qualified Data.Set as Set
 import qualified Shuffle.List as List
+import qualified Shuffle.Sequence as Sequence
+import qualified Shuffle.Vector as Vector
 import qualified System.Random as Random
-import Test.QuickCheck (Gen, Testable, quickCheck)
+import System.Random (RandomGen, StdGen)
+import Test.QuickCheck
 import Test.QuickCheck.Property (Prop)
 
-prop_commutativeAdd :: Int -> Int -> Bool
-prop_commutativeAdd x y = x + y == y + x
+type Shuffle g a = g -> [a] -> [a]
 
--- prop_lengthPreserving :: Testable prop => prop
-prop_lengthPreserving :: Int -> [Int] -> Bool
-prop_lengthPreserving n xs =
-  length (List.shuffle (Random.mkStdGen n) xs) == if n < 20 then length xs else 20
+prop_lengthPreserving :: Shuffle StdGen Int -> Int -> [Int] -> Bool
+prop_lengthPreserving shuffle n xs =
+  length (shuffle (Random.mkStdGen n) xs) == length xs
+
+prop_sameElements :: Shuffle StdGen Int -> Int -> [Int] -> Bool
+prop_sameElements shuffle n xs =
+  Set.fromList (shuffle (Random.mkStdGen n) xs) == Set.fromList xs
+
+prop_sameElements' :: Shuffle StdGen Int -> Int -> [Int] -> Bool
+prop_sameElements' shuffle n xs =
+  Set.fromList (shuffle (Random.mkStdGen n) xs) == Set.fromList xs
 
 main = do
-  quickCheck prop_lengthPreserving
+  let properties = [prop_lengthPreserving, prop_sameElements, prop_sameElements']
+      shuffles = [List.shuffle', Vector.shuffle, Vector.shuffle', Sequence.shuffle']
+      args = ($) <$> properties <*> shuffles
+  traverse_ quickCheck' args
+  where
+    quickCheck' = quickCheckWith (stdArgs {maxSuccess = 1000})
