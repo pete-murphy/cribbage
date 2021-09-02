@@ -3,6 +3,7 @@ module Cribbage.Scoring where
 import Card
 import Data.Function (on)
 import qualified Data.Graph as Graph
+import Data.Graph (Forest, Graph, Tree (..))
 import qualified Data.List as List
 
 scoreHand :: [Card] -> Int
@@ -22,6 +23,20 @@ countRuns cards =
               (dropWhile ((== rank n) . rank) ns)
       (graph, fromVertex, _) = Graph.graphFromEdges edges
    in length (Graph.edges graph)
+
+cardsGraph :: [Card] -> Graph
+cardsGraph cards =
+  let edges = toEdges =<< List.tails cards
+      toEdges [] = []
+      toEdges (n : ns) = [(n, n, next)]
+        where
+          next =
+            takeWhile
+              -- TODO: succ is unsafe
+              ((== succ (rank n)) . rank)
+              (dropWhile ((== rank n) . rank) ns)
+      (graph, fromVertex, _) = Graph.graphFromEdges edges
+   in graph
 
 countPairs :: [Card] -> Int
 countPairs =
@@ -45,9 +60,11 @@ cards =
     Three `Of` Clubs
   ]
 
--- This works
-xs = [1, 2, 3]
-
-xl = length xs
-
-avg = (/) (sum xs) (fromIntegral (xl))
+drawTree :: forall a. Show a => Tree a -> String
+drawTree = go ""
+  where
+    go :: String -> Tree a -> String
+    go pre (Node x xs) =
+      let a = show x
+          b = go (pre <> "  ") =<< xs
+       in pre <> a <> "\n" <> b
