@@ -26,13 +26,13 @@ main =
           --     bench "50000" $ whnf (Vector.shuffle stdGen) [0 .. 50000],
           --     bench "100000" $ whnf (Vector.shuffle stdGen) [0 .. 100000]
           --   ],
-          -- -- bgroup
-          -- --   "Vector.shuffle'"
-          -- --   [ bench "10" $ whnf (Vector.shuffle' stdGen) [0 .. 10],
-          -- --     bench "1000" $ whnf (Vector.shuffle' stdGen) [0 .. 1000],
-          -- --     bench "50000" $ whnf (Vector.shuffle' stdGen) [0 .. 50000],
-          -- --     bench "100000" $ whnf (Vector.shuffle' stdGen) [0 .. 100000]
-          -- --   ],
+          -- bgroup
+          --   "Vector.shuffle'"
+          --   [ bench "10" $ whnf (Vector.shuffle' stdGen) [0 .. 10],
+          --     bench "1000" $ whnf (Vector.shuffle' stdGen) [0 .. 1000],
+          --     bench "50000" $ whnf (Vector.shuffle' stdGen) [0 .. 50000],
+          --     bench "100000" $ whnf (Vector.shuffle' stdGen) [0 .. 100000]
+          --   ],
           bgroup
             "Sequence.shuffle"
             [ -- bench "10" $ whnf (Sequence.shuffle stdGen) [0 .. 10],

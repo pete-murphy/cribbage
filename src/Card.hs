@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -32,7 +33,7 @@ data Suit
   deriving (Eq, Ord, Show, Enum, Bounded)
 
 data Card = Of {rank :: Rank, suit :: Suit}
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 isFlush :: [Card] -> Bool
 isFlush cards = or do
