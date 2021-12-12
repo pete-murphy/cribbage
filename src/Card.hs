@@ -69,3 +69,9 @@ isStraight' cards = go (map rank (List.sort cards))
 distanceBetweenRanks :: Rank -> Rank -> Int
 distanceBetweenRanks r1 r2 =
   abs (fromEnum r1 - fromEnum r2)
+
+deck :: [Card]
+deck = do
+  suit <- [minBound .. maxBound]
+  rank <- [minBound .. maxBound]
+  pure (rank `Of` suit)

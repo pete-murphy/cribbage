@@ -6,12 +6,12 @@ import qualified Control.Monad as Monad
 import qualified Data.Foldable as Foldable
 import qualified Data.Function as Function
 import qualified Data.Graph as Graph
-import Data.Graph (Forest, Graph, Tree (..))
 import qualified Data.List as List
 import qualified Data.Map as Map
 import Data.Map ((!))
 import qualified Data.Maybe as Maybe
-import Data.Monoid (Sum (..))
+import Data.Monoid (Sum (Sum))
+import qualified Data.Monoid as Monoid
 import qualified Data.Ord as Ord
 
 scoreHand :: [Card] -> Int
@@ -34,15 +34,15 @@ scoreRuns cards =
   let histogram = Map.fromListWith (+) [(r, 1) | r `Of` _ <- cards]
       keys = Map.keys histogram
       ranks = [Ace .. King]
-      pairs = (,) <$> List.tails keys <*> List.tails ranks
-      longestRun = List.maximumBy (Ord.comparing length) (map (uncurry longestCommonPrefix) pairs)
+      runs = longestCommonPrefix <$> List.tails keys <*> List.tails ranks
+      longestRun = List.maximumBy (Ord.comparing length) runs
       n = product (flip Map.lookup histogram `Maybe.mapMaybe` longestRun)
    in n * length longestRun
 
 countPairs :: [Card] -> Int
 countPairs =
-  sum
-    . map ((`choose` 2) . length)
+  Monoid.getSum
+    . Foldable.foldMap (Sum . (`choose` 2) . length)
     . List.groupBy ((==) `Function.on` rank)
     . List.sortOn rank -- effectively same as `sort`
 
