@@ -18,6 +18,7 @@ library
       Cribbage.Game
       Cribbage.GameState
       Cribbage.Scoring
+      Shuffle
       Shuffle.List
       Shuffle.Random
       Shuffle.Sequence
@@ -41,6 +42,8 @@ library
     , base >=4.7 && <5
     , containers
     , criterion
+    , generic-lens
+    , lens
     , mtl
     , random
     , vector
@@ -66,6 +69,8 @@ executable cribbage-exe
     , containers
     , cribbage
     , criterion
+    , generic-lens
+    , lens
     , mtl
     , random
     , vector
@@ -92,6 +97,8 @@ test-suite cribbage-test
     , containers
     , cribbage
     , criterion
+    , generic-lens
+    , lens
     , mtl
     , random
     , vector

@@ -8,6 +8,8 @@ dependencies:
   - array
   - containers
   - criterion
+  - generic-lens
+  - lens
   - mtl
   - QuickCheck
   - random

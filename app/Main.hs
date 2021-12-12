@@ -6,8 +6,9 @@ import qualified Data.Graph as Graph
 
 main :: IO ()
 main = do
-  let g = Scoring.cardsGraph Scoring.cards
-  Foldable.traverse_
-    (putStrLn . Scoring.drawTree)
-    -- (Graph.dfs g [0 .. 4])
-    (Graph.dff g)
+  pure ()
+-- let g = Scoring.cardsGraph Scoring.cards
+-- Foldable.traverse_
+--   (putStrLn . Scoring.drawTree)
+--   -- (Graph.dfs g [0 .. 4])
+--   (Graph.dff g)

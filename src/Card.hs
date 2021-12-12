@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -7,6 +8,7 @@ module Card where
 import Data.Bits ((.&.))
 import qualified Data.Bits as Bits
 import qualified Data.List as List
+import GHC.Generics (Generic)
 
 data Rank
   = Ace
@@ -32,7 +34,7 @@ data Suit
   deriving (Eq, Ord, Show, Enum, Bounded)
 
 data Card = Of {rank :: Rank, suit :: Suit}
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Generic)
 
 value :: Card -> Int
 value c = min (fromEnum (rank c) + 1) 10
