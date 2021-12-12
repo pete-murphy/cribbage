@@ -1,48 +1,49 @@
 module Cribbage.Scoring where
 
-import Card
-import Data.Function (on)
+import Card (Card (..), Rank (..), Suit (..))
+import qualified Card
+import qualified Control.Monad as Monad
+import qualified Data.Foldable as Foldable
+import qualified Data.Function as Function
 import qualified Data.Graph as Graph
 import Data.Graph (Forest, Graph, Tree (..))
 import qualified Data.List as List
+import qualified Data.Map as Map
+import Data.Map ((!))
+import qualified Data.Maybe as Maybe
+import Data.Monoid (Sum (..))
+import qualified Data.Ord as Ord
 
 scoreHand :: [Card] -> Int
 scoreHand [] = 0
-scoreHand cs = countPairs cs * 2 + countRuns cs * 2
+scoreHand cs = countPairs cs * 2 + scoreRuns cs + scoreFifteens cs
 
-countRuns :: [Card] -> Int
-countRuns cards =
-  let edges = toEdges =<< List.tails cards
-      toEdges [] = []
-      toEdges (n : ns) = [(n, n, next)]
-        where
-          next =
-            takeWhile
-              -- TODO: succ is unsafe
-              ((== succ (rank n)) . rank)
-              (dropWhile ((== rank n) . rank) ns)
-      (graph, fromVertex, _) = Graph.graphFromEdges edges
-   in length (Graph.edges graph)
+longestCommonPrefix :: Eq a => [a] -> [a] -> [a]
+longestCommonPrefix (x : xs) (y : ys) =
+  if x == y then x : longestCommonPrefix xs ys else []
+longestCommonPrefix _ _ = []
 
-cardsGraph :: [Card] -> Graph
-cardsGraph cards =
-  let edges = toEdges =<< List.tails cards
-      toEdges [] = []
-      toEdges (n : ns) = [(n, n, next)]
-        where
-          next =
-            takeWhile
-              -- TODO: succ is unsafe
-              ((== succ (rank n)) . rank)
-              (dropWhile ((== rank n) . rank) ns)
-      (graph, fromVertex, _) = Graph.graphFromEdges edges
-   in graph
+scoreFifteens :: [Card] -> Int
+scoreFifteens cs = sum do
+  cs' <- List.subsequences cs
+  Monad.guard (Foldable.foldMap (Sum . Card.value) cs' == 15)
+  pure 2
+
+scoreRuns :: [Card] -> Int
+scoreRuns cards =
+  let histogram = Map.fromListWith (+) [(r, 1) | r `Of` _ <- cards]
+      keys = Map.keys histogram
+      ranks = [Ace .. King]
+      pairs = (,) <$> List.tails keys <*> List.tails ranks
+      longestRun = List.maximumBy (Ord.comparing length) (map (uncurry longestCommonPrefix) pairs)
+      n = product (flip Map.lookup histogram `Maybe.mapMaybe` longestRun)
+   in n * length longestRun
 
 countPairs :: [Card] -> Int
 countPairs =
   sum
     . map ((`choose` 2) . length)
-    . List.groupBy ((==) `on` rank)
+    . List.groupBy ((==) `Function.on` rank)
     . List.sortOn rank -- effectively same as `sort`
 
 choose :: Int -> Int -> Int
@@ -51,6 +52,9 @@ choose n r = fact n `div` (fact r * fact (n - r))
 fact :: Int -> Int
 fact n = product [1 .. n]
 
+-- | Example hands
+
+-- | Score would be 16 for this hand
 cards :: [Card]
 cards =
   [ Ace `Of` Hearts,
@@ -60,11 +64,12 @@ cards =
     Three `Of` Clubs
   ]
 
-drawTree :: forall a. Show a => Tree a -> String
-drawTree = go ""
-  where
-    go :: String -> Tree a -> String
-    go pre (Node x xs) =
-      let a = show x
-          b = go (pre <> "  ") =<< xs
-       in pre <> a <> "\n" <> b
+-- | Score would be 29 for this hand
+cards' :: [Card]
+cards' =
+  [ Five `Of` Hearts,
+    Five `Of` Clubs,
+    Five `Of` Diamonds,
+    Five `Of` Spades,
+    Ten `Of` Clubs
+  ]

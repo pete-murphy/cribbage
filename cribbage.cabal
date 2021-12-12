@@ -15,9 +15,10 @@ extra-source-files:
 library
   exposed-modules:
       Card
+      Cribbage.Game
+      Cribbage.GameState
       Cribbage.Scoring
       Shuffle.List
-      Shuffle.MyDList
       Shuffle.Random
       Shuffle.Sequence
       Shuffle.Vector

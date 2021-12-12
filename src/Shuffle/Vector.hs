@@ -4,7 +4,6 @@
 
 module Shuffle.Vector where
 
-import Control.Monad
 import Control.Monad.IO.Class (MonadIO)
 import qualified Control.Monad.IO.Class as IO.Class
 import qualified Control.Monad.ST as ST

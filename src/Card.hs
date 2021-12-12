@@ -1,6 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Card where
@@ -35,6 +34,9 @@ data Suit
 data Card = Of {rank :: Rank, suit :: Suit}
   deriving (Eq, Ord, Show)
 
+value :: Card -> Int
+value c = min (fromEnum (rank c) + 1) 10
+
 isFlush :: [Card] -> Bool
 isFlush cards = or do
   suit' <- [minBound .. maxBound]
@@ -50,14 +52,6 @@ showSuitBits Hearts = "0001"
 showSuitBits Diamonds = "0010"
 showSuitBits Clubs = "0100"
 showSuitBits Spades = "1000"
-
--- 1111 .&. -- complement 0
--- 0010 .&.
--- 0100 .&.
--- 0100 .&.
--- 0100 .&.
--- 0100 .&.
--- 0100
 
 isStraight :: [Card] -> Bool
 isStraight cards =

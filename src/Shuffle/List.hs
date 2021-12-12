@@ -1,6 +1,6 @@
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -Wno-deprecations #-}
 
 module Shuffle.List where
 
@@ -8,7 +8,8 @@ import Control.Monad.IO.Class (MonadIO)
 import qualified Control.Monad.IO.Class as IO.Class
 import qualified Control.Monad.State as State
 import qualified Data.List as List
-import Shuffle.Random as Random
+import qualified Shuffle.Random as Random
+import Shuffle.Random (RandomState (..), RandomStateT (..))
 import System.Random (RandomGen, StdGen)
 import qualified System.Random
 
@@ -27,7 +28,7 @@ shuffle' g = flip State.evalState g . runRandomState . go []
     go :: [a] -> [a] -> RandomState [a]
     go acc [] = pure acc
     go acc cards = do
-      n <- rand
+      n <- Random.rand
       let (cards', pick : cards'') = List.splitAt (n `mod` length cards) cards
       go (pick : acc) (cards' ++ cards'')
 
@@ -37,7 +38,7 @@ shuffle'' g = flip State.evalStateT g . runRandomStateT . go []
     go :: [a] -> [a] -> RandomStateT m [a]
     go acc [] = pure acc
     go acc cards = do
-      n <- rand'
+      n <- Random.rand'
       let (cards', pick : cards'') = List.splitAt (n `mod` length cards) cards
       go (pick : acc) (cards' ++ cards'')
 
@@ -45,7 +46,3 @@ shuffle''' :: MonadIO m => [a] -> m [a]
 shuffle''' cards = do
   g <- IO.Class.liftIO System.Random.newStdGen
   shuffle'' g cards
--- TODO: Shuffle w
--- - DList
--- - STArray
--- - (Mutable)Vector (works in ST)
