@@ -1,12 +1,13 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Card where
 
 import Data.Bits ((.&.))
 import qualified Data.Bits as Bits
+import qualified Data.Char as Char
 import qualified Data.List as List
 import GHC.Generics (Generic)
 
@@ -77,3 +78,52 @@ deck = do
   suit <- [minBound .. maxBound]
   rank <- [minBound .. maxBound]
   pure (rank `Of` suit)
+
+-- For single unicode characters
+-- TODO: Broken
+display' :: Card -> String
+display' Of {..} = pure (Char.chr (127136 + displaySuit suit * 16 + displayRank rank))
+  where
+    displaySuit = \case
+      Spades -> 1
+      Hearts -> 2
+      Diamonds -> 3
+      Clubs -> 4
+    displayRank = \case
+      Ace -> 1
+      Two -> 2
+      Three -> 3
+      Four -> 4
+      Five -> 5
+      Six -> 6
+      Seven -> 7
+      Eight -> 8
+      Nine -> 9
+      Ten -> 10
+      Jack -> 11
+      Queen -> 13
+      King -> 14
+
+-- For two unicode characters
+display :: Card -> String
+display Of {..} = displayRank rank <> displaySuit suit
+  where
+    displaySuit = \case
+      Spades -> "♠"
+      Hearts -> "♥"
+      Diamonds -> "♦"
+      Clubs -> "♣"
+    displayRank = \case
+      Ace -> "A"
+      Two -> "2"
+      Three -> "3"
+      Four -> "4"
+      Five -> "5"
+      Six -> "6"
+      Seven -> "7"
+      Eight -> "8"
+      Nine -> "9"
+      Ten -> "10"
+      Jack -> "J"
+      Queen -> "Q"
+      King -> "K"
