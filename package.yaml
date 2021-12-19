@@ -36,10 +36,16 @@ tests:
 
 default-extensions:
   - BlockArguments
+  - DeriveGeneric
+  - DerivingStrategies
+  - GeneralizedNewtypeDeriving
   - LambdaCase
   - NumericUnderscores
+  - OverloadedLabels
+  - RecordWildCards
   - ScopedTypeVariables
   - TypeApplications
+  - ViewPatterns
 
 ghc-options:
   - -O2

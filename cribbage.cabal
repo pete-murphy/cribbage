@@ -21,8 +21,7 @@ library
       Shuffle
       Shuffle.List
       Shuffle.Random
-      Shuffle.Sequence
-      Shuffle.Vector
+      Utils.List
       Main
   other-modules:
       Paths_cribbage
@@ -31,10 +30,16 @@ library
       test
   default-extensions:
       BlockArguments
+      DeriveGeneric
+      DerivingStrategies
+      GeneralizedNewtypeDeriving
       LambdaCase
       NumericUnderscores
+      OverloadedLabels
+      RecordWildCards
       ScopedTypeVariables
       TypeApplications
+      ViewPatterns
   ghc-options: -O2
   build-depends:
       QuickCheck
@@ -57,10 +62,16 @@ executable cribbage-exe
       app
   default-extensions:
       BlockArguments
+      DeriveGeneric
+      DerivingStrategies
+      GeneralizedNewtypeDeriving
       LambdaCase
       NumericUnderscores
+      OverloadedLabels
+      RecordWildCards
       ScopedTypeVariables
       TypeApplications
+      ViewPatterns
   ghc-options: -O2
   build-depends:
       QuickCheck
@@ -85,10 +96,16 @@ test-suite cribbage-test
       test
   default-extensions:
       BlockArguments
+      DeriveGeneric
+      DerivingStrategies
+      GeneralizedNewtypeDeriving
       LambdaCase
       NumericUnderscores
+      OverloadedLabels
+      RecordWildCards
       ScopedTypeVariables
       TypeApplications
+      ViewPatterns
   ghc-options: -O2
   build-depends:
       QuickCheck
