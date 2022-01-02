@@ -18,6 +18,7 @@ library
       Cribbage.Game
       Cribbage.GameState
       Cribbage.Scoring
+      Foo
       Shuffle
       Shuffle.List
       Shuffle.Random
