@@ -1,62 +1,57 @@
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Cribbage.GameState where
 
 import Card (Card)
+import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Map (Map)
 import GHC.Generics (Generic)
 
-data Initial
-  = Initial
-      { deck :: [Card],
-        board :: Board
-      }
+newtype Initial = Initial
+  { deck :: [Card]
+  }
   deriving (Generic)
 
-data Deal
-  = Deal
-      { deck :: [Card],
-        board :: Board,
-        -- | Dealer is determined by each player drawing a card from deck, lower
-        -- card gets to deal
-        dealer :: Player,
-        playerHands :: PlayerHands
-      }
+data Deal = Deal
+  { deck :: [Card],
+    -- | Dealer is determined by each player drawing a card from deck, lower
+    -- card gets to deal
+    dealer :: Player,
+    playerHands :: PlayerHands,
+    board :: Board
+  }
   deriving (Generic)
 
-data Crib
-  = Crib
-      { deck :: [Card],
-        board :: Board,
-        dealer :: Player,
-        playerHands :: PlayerHands,
-        -- | Players discard two cards each to the crib
-        crib :: [Card]
-      }
+data Crib = Crib
+  { deck :: [Card],
+    dealer :: Player,
+    playerHands :: PlayerHands,
+    -- | Players discard two cards each to the crib
+    crib :: [Card],
+    board :: Board
+  }
   deriving (Generic)
 
-data PrePlay
-  = PrePlay
-      { deck :: [Card],
-        board :: Board,
-        dealer :: Player,
-        playerHands :: PlayerHands,
-        crib :: [Card],
-        -- | The cut card
-        starter :: Card
-      }
+data PrePlay = PrePlay
+  { dealer :: Player,
+    playerHands :: PlayerHands,
+    crib :: [Card],
+    -- | The cut card
+    starter :: Card,
+    board :: Board
+  }
   deriving (Generic)
 
-data Play
-  = Play
-      { deck :: [Card],
-        board :: Board,
-        dealer :: Player,
-        playerHands :: PlayerHands,
-        crib :: [Card],
-        starter :: Card,
-        cardsInPlay :: CardsInPlay
-      }
+data Play = Play
+  { board :: Board,
+    dealer :: Player,
+    playerHands :: PlayerHands,
+    crib :: [Card],
+    starter :: Card,
+    cardsInPlay :: CardsInPlay,
+    board :: Board
+  }
   deriving (Generic)
 
 -- Fixing the number of players to two for now
@@ -74,11 +69,15 @@ type PlayerHands = Map Player [Card]
 type CardsInPlay =
   [(Player, Maybe Card)]
 
-data GameState m
-  = GameState
-      { initial :: m Initial,
-        deal :: Initial -> m Deal,
-        crib :: Deal -> m Crib,
-        cutDeck :: Crib -> m PrePlay,
-        play :: Play -> m Player
-      }
+data Game m = Game
+  { initial :: m Initial,
+    deal :: Initial -> m Deal,
+    makeCrib :: Deal -> m Crib,
+    cutDeck :: Crib -> m PrePlay,
+    play :: PrePlay -> m Play,
+    done :: Play -> m Player -- Not sure about these last two
+  }
+
+runGame :: MonadIO m => Game m -> m Player
+runGame Game {initial, deal, makeCrib, cutDeck, play, done} =
+  initial >>= deal >>= makeCrib >>= cutDeck >>= play >>= done

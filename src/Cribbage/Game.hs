@@ -1,26 +1,27 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 module Cribbage.Game where
 
 import Card (Card, Rank (..))
 import qualified Card
-import qualified Control.Exception as Exception
 import Control.Lens.Combinators hiding (_Unwrapped)
 import Control.Lens.Operators
 import Control.Monad.IO.Class (MonadIO (..))
-import Control.Monad.Reader (MonadReader)
-import qualified Control.Monad.Reader as Reader
 import Cribbage.GameState
   ( Board (..),
     Crib (..),
     Deal (..),
-    GameState (GameState),
+    Game (Game),
     Initial (..),
     Play (..),
     Player (..),
     PrePlay (..),
   )
+import qualified Cribbage.GameState as GameState
 import qualified Data.Foldable as Foldable
 import Data.Generics.Labels ()
 import Data.Generics.Wrapped (_Unwrapped)
+import qualified Data.List as List
 import Data.Map (Map)
 import qualified Data.Map as Map
 import GHC.Generics (Generic)
@@ -33,87 +34,57 @@ import qualified Utils.List as List
 initial :: MonadIO m => m Initial
 initial = do
   gen <- liftIO Random.newStdGen
-  pure
-    ( Initial
-        { deck = Shuffle.List.shuffle gen Card.deck,
-          board = Board (Map.fromList [(A, 0), (B, 0)])
-        }
-    )
+  let deck = Shuffle.List.shuffle gen Card.deck
+  pure (Initial {deck})
 
-gameState :: MonadIO m => GameState m
-gameState =
-  GameState initial undefined undefined undefined undefined
+deal :: MonadIO m => Initial -> m Deal
+deal Initial {deck} = do
+  liftIO (putStrLn "Pick a card from deck")
+  -- TODO: accept a number index here, for drawing from deck
+  _ <- liftIO getLine
+  -- TODO: actually draw from deck, put back in and shuffle
+  let (drawnA : drawnB : _) = deck
+      -- TODO: if equal, draw again
+      dealer = if drawnA < drawnB then A else B
+      (handA, deck') = List.splitAt 4 deck
+      (handB, deck'') = List.splitAt 4 deck'
+      playerHands = Map.fromList [(A, handA), (B, handB)]
+      board = Board (Map.fromList [(A, 0), (B, 0)])
+  pure (Deal {deck = deck'', dealer, playerHands, board})
 
--- |
--- -- | We can always derive the active player from current game state by looking
--- -- at who played the last card (or if there are no cards played, its the
--- -- dealer's turn)
--- activePlayer :: GameState -> Player
--- activePlayer gameState =
---   case gameState ^? failing (#play . #_Play . position @4 . ix 0 . _1) (#dealer . _Just) of
---     Just player -> player
---     _ -> error "Failed to get active player"
+makeCrib :: MonadIO m => Deal -> m Crib
+makeCrib Deal {board, deck, dealer, playerHands} = do
+  liftIO (putStrLn (if dealer == A then "Pick cards for your crib" else "Pick cards for opponent's crib"))
+  -- TODO: needs to be two numbers
+  n <- read <$> liftIO getLine
+  m <- read <$> liftIO getLine
+  -- TODO: handle error here
+  let (Just (cribA, handA)) = List.selectIxs [n, m] (playerHands ^. ix A)
+      -- TODO: handle error here, and use diff indices
+      (Just (cribB, handB)) = List.selectIxs [n, m] (playerHands ^. ix B)
+      playerHands' = Map.fromList [(A, handA), (B, handB)]
+      crib = cribA <> cribB
+  pure (Crib {board, deck, dealer, playerHands = playerHands', crib})
 
--- otherPlayer :: Player -> Player
--- otherPlayer = \case
---   A -> B
---   B -> A
+cutDeck :: MonadIO m => Crib -> m PrePlay
+cutDeck Crib {board, deck, dealer, playerHands, crib} = do
+  let (starter : _) = deck
+  pure (PrePlay {board, starter, dealer, playerHands, crib})
 
--- deal ::
---   Int -> -- How many to deal (could fix to 6)
---   GameState ->
---   GameState
--- deal n gameState =
---   case List.splitAtMany [n, n] (deck gameState) of
---     Just [a, b, rest] ->
---       gameState
---         & #play . playerHands . partsOf traversed .~ [a, b]
---         & #deck .~ rest
---     _ -> error "Not enough cards to deal"
+play :: MonadIO m => PrePlay -> m Play
+play PrePlay {board, starter, dealer, playerHands, crib} = do
+  let cardsInPlay = []
+  pure (Play {board, dealer, playerHands, crib, starter, cardsInPlay})
 
--- makeCrib ::
---   [Card] -> -- Which cards player A chooses to put in crib
---   [Card] -> -- Which cards player B chooses to put in crib
---   GameState ->
---   GameState
--- makeCrib cribA cribB gameState =
---   case gameState ^. #play . playerHands . to Map.elems of
---     [ List.select cribA -> Just restA,
---       List.select cribB -> Just restB
---       ] ->
---         gameState
---           -- `#play . #playerHands . traversed` would be a
---           -- `Traversal' GameState [Card]`
---           -- `partsOf` makes that a `Lens' GameState [[Card]]`
---           -- so we can update both hands at the same time
---           & #play . playerHands . partsOf traversed .~ [restA, restB]
---           & #play . #_Crib . position @2 .~ cribA <> cribB
---     _ -> error "Failed to make crib"
+done :: MonadIO m => Play -> m Player
+done Play {board, dealer, playerHands, crib, starter, cardsInPlay} = do
+  pure A
 
--- cutDeck :: GameState -> GameState
--- cutDeck gameState =
---   let dealer = activePlayer gameState
---    in case List.selectIxs [0] (deck gameState) of
---         Just ([cutCard], rest) ->
---           gameState
---             & #deck .~ rest
---             & #play . #_CutCard . position @3 .~ cutCard
---             -- If cut card is Jack, dealer gets two points ("his heels")
---             & #board . _Unwrapped . ix dealer . filtered (\_ -> Card.rank cutCard == Jack) +~ 2
---         _ -> error "Failed to cut deck"
+game :: MonadIO m => Game m
+game =
+  Game initial deal makeCrib cutDeck play done
 
--- -- TODO: Update score on card play
--- playCard :: Card -> GameState -> GameState
--- playCard card gameState =
---   let player = activePlayer gameState
---       sumOfCardsInPlay =
---         sumOf
---           (#play . #_Play . position @4 . folded . _2 . _Just . to Card.value)
---           gameState
---       canPlayCard = sumOfCardsInPlay + Card.value card <= 31
---    in case (List.select [card] (gameState ^. #play . playerHands . ix player), canPlayCard) of
---         (Just rest, True) ->
---           gameState
---             & #play . playerHands . ix player .~ rest
---             & #play . #_Play . position @4 %~ (:) (player, Just card)
---         _ -> error "Failed to play card"
+otherPlayer :: Player -> Player
+otherPlayer = \case
+  A -> B
+  B -> A
